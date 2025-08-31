@@ -34,10 +34,10 @@ ________________________________________
 ## 📊 Results
 
 ### Bar Chart – Accuracy & F1
-![Bar Chart](NEW_HEAD/BAR_CHART.png)
+![Bar Chart](BAR_CHART.png)
 
 ### Line Chart – Accuracy Across Epochs
-![Line Chart](NEW_HEAD/LINE_CHART.png)
+![Line Chart](LINE_CHART.png)
 
 ________________________________________
 🔮 Inference Demo
