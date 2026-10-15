@@ -1,10 +1,37 @@
-# Transformer Fine-Tuning Laboratory
+<p align="center">
+  <a href="https://github.com/shubham-61291/FINE_TUNING"><img src="https://img.shields.io/badge/TRANSFORMER-FINE--TUNING_LAB-20232A?style=for-the-badge&amp;logo=huggingface&amp;logoColor=FFD21E" alt="Transformer Fine-Tuning Laboratory" /></a>
+</p>
 
-**A controlled comparison of head-only fine-tuning, last-layer fine-tuning, LoRA, and QLoRA for IMDb sentiment classification.**
+<h1 align="center">Transformer Fine-Tuning Laboratory</h1>
+
+<p align="center"><strong>A controlled comparison of head-only fine-tuning, last-layer fine-tuning, LoRA, and QLoRA for IMDb sentiment classification.</strong></p>
+
+<p align="center"><a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-Training-3776AB?style=for-the-badge&amp;logo=python&amp;logoColor=white" alt="Python training" /></a> &nbsp; <a href="https://huggingface.co/docs/transformers/index"><img src="https://img.shields.io/badge/Hugging_Face-Transformers-FFD21E?style=for-the-badge&amp;logo=huggingface&amp;logoColor=black" alt="Hugging Face Transformers" /></a> &nbsp; <a href="https://huggingface.co/datasets/stanfordnlp/imdb"><img src="https://img.shields.io/badge/Dataset-IMDb-4A4A4A?style=for-the-badge&amp;logo=imdb&amp;logoColor=white" alt="IMDb dataset" /></a> &nbsp; <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-238636?style=for-the-badge&amp;logo=opensourceinitiative&amp;logoColor=white" alt="MIT License" /></a></p>
+
+<p align="center"><strong>License:</strong> <a href="LICENSE">MIT License</a> · <strong>Experiments:</strong> 4 · <strong>Task:</strong> Binary sentiment classification</p>
 
 This repository contains four focused experiments that adapt pretrained Transformer sequence-classification models to binary movie-review sentiment. The experiments compare how much of a pretrained network is updated, how parameter-efficient methods change the trainable parameter set, and how evaluation metrics look before and after training.
 
 The intent is educational and comparative: each directory includes its training script, method-specific README, and result plots. The training scripts are exported from Google Colab notebooks and use Hugging Face Transformers, Datasets, Evaluate, and the relevant parameter-efficient fine-tuning libraries.
+
+---
+
+## Contents
+
+- [Experiment map](#experiment-map)
+- [Repository layout](#repository-layout)
+- [What the experiments compare](#what-the-experiments-compare)
+- [Common training and evaluation protocol](#common-training-and-evaluation-protocol)
+- [Results and chart interpretation](#results-and-chart-interpretation)
+- [Environment and installation](#environment-and-installation)
+- [Inference concept](#inference-concept)
+- [Reproducibility and customization](#reproducibility-and-customization)
+- [Scope and interpretation](#scope-and-interpretation)
+- [Author](#author)
+- [License](#license)
+
+
+**Quick navigation:** [Head-only](NEW_HEAD/README.md) · [Last-layer](LAST_LAYER/README.md) · [LoRA](PEFT_LORA/README.md) · [QLoRA](PEFT_QLORA/README.md) · [MIT License](LICENSE)
 
 ## Experiment map
 
@@ -147,6 +174,8 @@ Shubham Singh
 ---
 
 ## License
+
+This project is licensed under the [MIT License](LICENSE). The full license text is reproduced below; the standalone [`LICENSE`](LICENSE) file is the canonical license file for this directory.
 
 MIT License
 
