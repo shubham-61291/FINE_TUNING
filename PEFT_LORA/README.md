@@ -2,6 +2,26 @@
 
 **Low-Rank Adaptation for binary IMDb sentiment classification using `bert-base-uncased`.** Rather than intentionally updating every pretrained backbone parameter, this experiment wraps a sequence-classification model with PEFT LoRA adapters targeting attention query and value projections.
 
+<p align="center"><a href="#contents"><img src="https://img.shields.io/badge/Method-LoRA_%2F_PEFT-0E8A16?style=for-the-badge&amp;logo=pytorch&amp;logoColor=white" alt="Method: LoRA / PEFT" /></a> &nbsp; <a href="https://huggingface.co/"><img src="https://img.shields.io/badge/Model-BERT-EE4C2C?style=for-the-badge&amp;logo=huggingface&amp;logoColor=white" alt="Model: BERT" /></a> &nbsp; <a href="https://huggingface.co/datasets/stanfordnlp/imdb"><img src="https://img.shields.io/badge/Dataset-IMDb-4A4A4A?style=for-the-badge&amp;logo=imdb&amp;logoColor=white" alt="IMDb dataset" /></a> &nbsp; <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-Training-3776AB?style=for-the-badge&amp;logo=python&amp;logoColor=white" alt="Python training" /></a> &nbsp; <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-238636?style=for-the-badge&amp;logo=opensourceinitiative&amp;logoColor=white" alt="MIT License" /></a></p>
+
+<p align="center"><strong><a href="../README.md">Repository overview</a></strong> · <strong><a href="peft_lora.py">Training script</a></strong> · <strong><a href="LICENSE">MIT License</a></strong></p>
+
+## Contents
+
+- [1. Why this experiment exists](#1-why-this-experiment-exists)
+- [2. Model and hyperparameters](#2-model-and-hyperparameters)
+- [3. LoRA configuration explained](#3-lora-configuration-explained)
+- [4. Training pipeline](#4-training-pipeline)
+- [5. Setup and runtime notes](#5-setup-and-runtime-notes)
+- [6. Evaluation metrics](#6-evaluation-metrics)
+- [7. Result artifacts](#7-result-artifacts)
+- [8. Saved model](#8-saved-model)
+- [9. Practical considerations](#9-practical-considerations)
+- [10. Reproduction checklist](#10-reproduction-checklist)
+- [Author](#author)
+- [License](#license)
+
+
 ## 1. Why this experiment exists
 
 Full fine-tuning updates the model's pretrained weights. LoRA introduces trainable low-rank updates into selected linear projections and keeps the base weights frozen by the PEFT adapter setup. This changes the training problem from updating the full model to optimizing a much smaller adapter/task-specific parameter set.
@@ -112,6 +132,16 @@ The folder contains the trained PEFT model artifacts and tokenizer files generat
 - [ ] Inspect both charts.
 - [ ] Confirm `outputs/imdb_lora/model/` contains the saved model and tokenizer.
 
+
+## Explore the other experiments
+
+| Approach | Documentation |
+|---|---|
+| Head-only classification head | [NEW_HEAD](../NEW_HEAD/README.md) |
+| Final Transformer block + head | [LAST_LAYER](../LAST_LAYER/README.md) |
+| Low-Rank Adaptation | [PEFT_LORA](../PEFT_LORA/README.md) |
+| 4-bit quantized LoRA | [PEFT_QLORA](../PEFT_QLORA/README.md) |
+
 ## Author
 
 Shubham Singh
@@ -120,6 +150,8 @@ Shubham Singh
 ---
 
 ## License
+
+This project is licensed under the [MIT License](LICENSE). The full license text is reproduced below; the standalone [`LICENSE`](LICENSE) file is the canonical license file for this directory.
 
 MIT License
 
