@@ -1,113 +1,171 @@
-# FINE_TUNING
-A complete showcase of modern Transformer fine-tuning strategies — from full fine-tuning to parameter-efficient PEFT
+# Transformer Fine-Tuning Laboratory
 
-Transformer Fine-Tuning Experiments (Head-only, Last-layer, LoRA, QLoRA)
+**A controlled comparison of head-only fine-tuning, last-layer fine-tuning, LoRA, and QLoRA for IMDb sentiment classification.**
 
-This repository is a comprehensive showcase of fine-tuning strategies for Transformers, applied to the IMDb Sentiment Classification
- task.
+This repository contains four focused experiments that adapt pretrained Transformer sequence-classification models to binary movie-review sentiment. The experiments compare how much of a pretrained network is updated, how parameter-efficient methods change the trainable parameter set, and how evaluation metrics look before and after training.
 
-It explores traditional fine-tuning (head-only, last-layer) alongside parameter-efficient fine-tuning (PEFT) methods (LoRA and QLoRA).
+The intent is educational and comparative: each directory includes its training script, method-specific README, and result plots. The training scripts are exported from Google Colab notebooks and use Hugging Face Transformers, Datasets, Evaluate, and the relevant parameter-efficient fine-tuning libraries.
 
-📌 Project Structure
+## Experiment map
+
+| Experiment | Directory | Base checkpoint | What is trained | Main efficiency lever |
+|---|---|---|---|---|
+| New classification head | [`NEW_HEAD/`](NEW_HEAD/README.md) | `distilbert-base-uncased` | Newly initialized classification head; backbone frozen | Minimal trainable parameter set |
+| Last Transformer block + head | [`LAST_LAYER/`](LAST_LAYER/README.md) | `distilbert-base-uncased` | Final Transformer block and classification head | Partial backbone adaptation |
+| LoRA | [`PEFT_LORA/`](PEFT_LORA/README.md) | `bert-base-uncased` | LoRA adapters and task head according to PEFT sequence-classification wrapping | Low-rank trainable updates |
+| QLoRA | [`PEFT_QLORA/`](PEFT_QLORA/README.md) | `bert-base-uncased` | LoRA adapters and task head on a 4-bit quantized base model | Low-bit base weights plus low-rank updates |
+
+Each experiment reports **accuracy** and **weighted F1** on the IMDb test split before and after fine-tuning. The repository includes bar charts for the before/after metric comparison and line-chart visualizations of baseline versus final accuracy. See the individual READMEs for exact configuration and output paths.
+
+## Repository layout
+
+```text
 FINE_TUNING/
-│
-├── NEW_HEAD/       # Head-only fine-tuning
-├── LAST_LAYER/     # Last-layer + head fine-tuning
-├── PEFT_LORA/      # LoRA fine-tuning (PEFT)
-├── PEFT_QLORA/     # QLoRA fine-tuning (PEFT + 4-bit quantization)
-│
+├── README.md
 ├── LICENSE
-└── README.md       # (this file)
+├── NEW_HEAD/
+│   ├── README.md
+│   ├── fine_tuning_new_head_addiiton.py
+│   ├── BAR_CHART.png
+│   └── LINE_CHART.png
+├── LAST_LAYER/
+│   ├── README.md
+│   ├── last_layer_fine_tuning.py
+│   ├── bar_chart.png
+│   └── Line_chart.png
+├── PEFT_LORA/
+│   ├── README.md
+│   ├── peft_lora.py
+│   ├── bar_chart.png
+│   └── line_chart.png
+└── PEFT_QLORA/
+    ├── README.md
+    ├── peft_qlora.py
+    ├── bar_chart.png
+    └── line_chart.png
+```
 
+The filenames and capitalization above reflect the current repository. GitHub paths are case-sensitive in many environments, so preserve capitalization when referencing the chart files.
 
-Each subfolder contains:
+## What the experiments compare
 
-Training script (.py)
+### 1. Head-only fine-tuning
 
-Results (bar chart + line chart)
+[`NEW_HEAD`](NEW_HEAD/README.md) loads DistilBERT with a binary sequence-classification head, freezes the model's `base_model` parameters, and updates only the classification head. This is the least invasive of the four experiments and provides a useful reference for how much an initialized task head can learn while the pretrained representation remains fixed.
 
-README.md explaining the method + results
+### 2. Last-layer fine-tuning
 
-🔹 Methods Implemented
-1️⃣ Head-only Fine-tuning (NEW_HEAD)
+[`LAST_LAYER`](LAST_LAYER/README.md) freezes model parameters first, then enables gradients for the classification head and the final Transformer block. The implementation includes model-family checks for DistilBERT, BERT, RoBERTa/XLM-R, and a fallback for common `base_model` encoder layouts. The configured run uses DistilBERT and a lower learning rate than the head-only experiment.
 
-Freeze the pretrained model.
+### 3. LoRA with PEFT
 
-Train only a new classification head.
+[`PEFT_LORA`](PEFT_LORA/README.md) applies Low-Rank Adaptation to the query and value projection modules of `bert-base-uncased`. The base sequence-classification model is wrapped with PEFT using `TaskType.SEQ_CLS`; the adapter rank, scaling factor, and dropout are configured explicitly. The script prints the trainable-parameter summary before training.
 
-Fast, lightweight, but limited adaptation.
+### 4. QLoRA with PEFT and 4-bit loading
 
-## 📊 Results
+[`PEFT_QLORA`](PEFT_QLORA/README.md) loads `bert-base-uncased` through `BitsAndBytesConfig` with 4-bit NF4 quantization and double quantization, then applies the same family of LoRA query/value adapters. The configured compute dtype is BF16 when CUDA is available and FP32 otherwise. Its training arguments also enable BF16 when CUDA is available and disable FP16.
 
-### Bar Chart – Accuracy & F1
-![Bar Chart](NEW_HEAD/BAR_CHART.png)
+## Common training and evaluation protocol
 
-### Line Chart – Accuracy Across Epochs
-![Line Chart](NEW_HEAD/LINE_CHART.png)
+The scripts share a recognizable sequence:
 
+1. Set a reproducible seed with `set_seed(42)` and disable Weights & Biases reporting through `WANDB_DISABLED` / `report_to="none"`.
+2. Load the IMDb dataset with `load_dataset("imdb")`.
+3. Use the configured `SMALL_RUN` switch to sample 4,000 training examples and 2,000 test examples after seeded shuffling. In the scripts, `SMALL_RUN = True` by default to make demonstrations faster.
+4. Load a fast tokenizer and tokenize the review `text` field with truncation enabled.
+5. Use `DataCollatorWithPadding` to dynamically pad batches where included in the script.
+6. Load a two-label sequence-classification model and configure which parameters are trainable for the method being demonstrated.
+7. Evaluate the untrained task head/adapters or the current model before training.
+8. Train for three epochs using the method-specific learning rate, batch sizes, precision settings, and weight decay.
+9. Evaluate again, plot the before/after scores, and save the fine-tuned model and tokenizer under the corresponding `outputs/` directory.
 
-2️⃣ Last-layer Fine-tuning (LAST_LAYER)
+The common metric function uses `argmax` over logits for predicted labels, computes accuracy, and computes **weighted** F1. The binary label convention in the inference helpers is `0 = negative` and `1 = positive`, displayed as `neg` and `pos` respectively.
 
-Train the classification head and the last Transformer block.
+## Results and chart interpretation
 
-Balances compute and performance.
+The charts stored in the repository are intended to compare metrics before and after fine-tuning for each strategy:
 
-## 📊 Results
+| Experiment | Accuracy/F1 plot | Accuracy comparison plot |
+|---|---|---|
+| Head-only | [Bar chart](NEW_HEAD/BAR_CHART.png) | [Line chart](NEW_HEAD/LINE_CHART.png) |
+| Last-layer | [Bar chart](LAST_LAYER/bar_chart.png) | [Line chart](LAST_LAYER/Line_chart.png) |
+| LoRA | [Bar chart](PEFT_LORA/bar_chart.png) | [Line chart](PEFT_LORA/line_chart.png) |
+| QLoRA | [Bar chart](PEFT_QLORA/bar_chart.png) | [Line chart](PEFT_QLORA/line_chart.png) |
 
-### Bar Chart – Accuracy & F1
-![Bar Chart](LAST_LAYER/bar_chart.png)
+**Important plotting detail:** the current scripts construct the line plots by repeating the single baseline accuracy and the single final accuracy across an epoch-indexed x-axis. They are before-versus-after summary visualizations, not measurements logged separately at each epoch. The bar charts compare the baseline evaluation values with the post-training evaluation values. Exact scores should be read from the current chart artifacts or the corresponding run's evaluation output; this README does not invent numeric scores that are not documented in the source.
 
-### Line Chart – Accuracy Across Epochs
-![Line Chart](LAST_LAYER/Line_chart.png)
+The original project provides a qualitative efficiency comparison: head-only updates roughly 1–2% of parameters, last-layer plus head roughly 10–15%, and LoRA/QLoRA roughly 1%; it labels the memory use as low, medium, low, and ultra-low respectively, with QLoRA using 4-bit quantization. These are the repository's stated high-level comparisons, not hardware-independent guarantees. Actual memory usage and the trainable-parameter percentage depend on the model architecture, library versions, precision, and runtime.
 
+## Environment and installation
 
-3️⃣ LoRA Fine-tuning (PEFT_LORA)
+The scripts use the Hugging Face model and dataset download APIs, so the runtime needs internet access on the first run unless model and dataset artifacts are already cached. A CUDA GPU is helpful for speed and is needed for the intended 4-bit bitsandbytes experiment in most supported setups.
 
-Insert low-rank adapters into Query & Value projection matrices.
+Install the shared libraries in a notebook cell or terminal environment:
 
-Train only adapters + head, freeze backbone.
+```bash
+pip install -U transformers datasets evaluate accelerate peft bitsandbytes matplotlib torch
+```
 
-Efficient, memory-friendly, strong performance.
+For head-only and last-layer experiments, the project READMEs use the smaller set `transformers datasets evaluate accelerate`; LoRA and QLoRA also use `peft` and `bitsandbytes`. The QLoRA source notebook explicitly upgrades `bitsandbytes`, `transformers`, `accelerate`, and `peft`.
 
-## 📊 Results
+### Running the exported scripts
 
-### Bar Chart – Accuracy & F1
-![Bar Chart](PEFT_LORA/bar_chart.png)
+The `.py` files in this repository are exported from Colab notebooks. Their first lines include notebook-style `!pip` installation commands, which are valid in notebook cells but are not ordinary Python syntax in a plain `.py` process. For the least-friction reproduction path, open the corresponding notebook environment and run the cells as intended; alternatively, install dependencies separately in the shell and remove the notebook-only installation lines before running the exported file as a standalone Python script.
 
-### Line Chart – Accuracy Across Epochs
-![Line Chart](PEFT_LORA/line_chart.png)
+Typical experiment outputs are written to:
 
+- `outputs/imdb_head_only/model/`
+- `outputs/imdb_last_layer/model/`
+- `outputs/imdb_lora/model/`
+- `outputs/imdb_qlora/model/`
 
-4️⃣ QLoRA Fine-tuning (PEFT_QLORA)
+These paths are created by the scripts during execution and are not part of the tracked repository tree shown here. `trainer.save_model(...)` saves the fine-tuned model and `tokenizer.save_pretrained(...)` saves tokenizer artifacts beside it. Keep the resulting model directory if you want to reuse the trained artifact for inference.
 
-Load backbone in 4-bit NF4 quantized mode (bitsandbytes).
+## Inference concept
 
-Add LoRA adapters for efficient fine-tuning.
+The head-only, last-layer, and LoRA scripts define a `predict(texts)` helper. It tokenizes a list of reviews with truncation and padding, moves the encoded batch to the configured device, switches the model to evaluation mode, disables gradient calculation, applies softmax to logits, and returns each input with negative probability, positive probability, and the predicted label. The READMEs include the same two sample review themes: one strongly positive review and one negative review. Those outputs are illustrative examples, not guaranteed probabilities from every newly trained run.
 
-Enables training larger models on a single GPU.
+The QLoRA training script saves the adapted model and tokenizer; it does not currently include the same explicit `predict(texts)` helper in the exported code. The shared high-level goal is still binary IMDb sentiment classification.
 
-## 📊 Results
+## Reproducibility and customization
 
-### Bar Chart – Accuracy & F1
-![Bar Chart](PEFT_QLORA/bar_chart.png)
+- **Fast demonstration:** keep `SMALL_RUN = True`; seeded subsets use 4,000 train and 2,000 test examples.
+- **Full IMDb split:** set `SMALL_RUN = False` in the script to avoid the subset selection. Training and evaluation will take longer and require more compute.
+- **Change the pretrained checkpoint:** edit `model_name` and verify that the last-layer selector or LoRA target-module names match the chosen architecture.
+- **Inspect the trainable surface:** the scripts print trainable parameter names or PEFT trainable-parameter summaries for sanity checking.
+- **Compare runs consistently:** record model checkpoint, subset mode, library versions, GPU model, precision, and the final `eval_accuracy` / `eval_f1` values alongside the charts.
 
-### Line Chart – Accuracy Across Epochs
-![Line Chart](PEFT_QLORA/line_chart.png)
+## Scope and interpretation
 
+This is a collection of fine-tuning experiments and result visualizations, not a packaged deployment service. The source demonstrates the training/evaluation workflow and saving of model artifacts. It does not define a shared CLI, inference API, hyperparameter sweep, or model-serving endpoint. Results from the small sampled run should be interpreted as a fast demonstration on a subset rather than a full-dataset benchmark. The PEFT and quantization approaches are intended to reduce training cost relative to updating a full backbone; they do not guarantee the same absolute quality or memory footprint on every model or hardware configuration.
 
-⚡ Parameter Efficiency Comparison
-Method	Trainable Params	GPU Memory	Accuracy Gain
-Head-only	~1–2%	Low	✅ Limited
-Last-layer	~10–15%	Medium	✅ Good
-LoRA (PEFT)	~1%	Low	✅ Strong
-QLoRA (PEFT + 4b)	~1%	Ultra-Low	✅ Strong
-🛠️ Setup
-pip install -U transformers datasets evaluate accelerate peft bitsandbytes
-
-👤 Author
+## Author
 
 Shubham Singh
 
-📜 License
+
+---
+
+## License
 
 MIT License
+
+Copyright (c) 2026 Shubham Kumar Singh
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
