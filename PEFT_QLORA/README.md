@@ -2,6 +2,26 @@
 
 **A parameter-efficient IMDb sentiment-classification experiment that combines a quantized base model with LoRA adapters.** The script loads `bert-base-uncased` through Transformers' bitsandbytes quantization configuration, applies LoRA to attention query/value projections, evaluates before and after training, and saves the resulting model artifacts.
 
+<p align="center"><a href="#contents"><img src="https://img.shields.io/badge/Method-QLoRA_%2F_4-bit-0E8A16?style=for-the-badge&amp;logo=pytorch&amp;logoColor=white" alt="Method: QLoRA / 4-bit" /></a> &nbsp; <a href="https://huggingface.co/"><img src="https://img.shields.io/badge/Model-BERT_%2B_NF4-EE4C2C?style=for-the-badge&amp;logo=huggingface&amp;logoColor=white" alt="Model: BERT + NF4" /></a> &nbsp; <a href="https://huggingface.co/datasets/stanfordnlp/imdb"><img src="https://img.shields.io/badge/Dataset-IMDb-4A4A4A?style=for-the-badge&amp;logo=imdb&amp;logoColor=white" alt="IMDb dataset" /></a> &nbsp; <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-Training-3776AB?style=for-the-badge&amp;logo=python&amp;logoColor=white" alt="Python training" /></a> &nbsp; <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-238636?style=for-the-badge&amp;logo=opensourceinitiative&amp;logoColor=white" alt="MIT License" /></a></p>
+
+<p align="center"><strong><a href="../README.md">Repository overview</a></strong> · <strong><a href="peft_qlora.py">Training script</a></strong> · <strong><a href="LICENSE">MIT License</a></strong></p>
+
+## Contents
+
+- [1. Method overview](#1-method-overview)
+- [2. Configuration reference](#2-configuration-reference)
+- [3. Quantization and adapter setup](#3-quantization-and-adapter-setup)
+- [4. Training workflow](#4-training-workflow)
+- [5. Installation and runtime compatibility](#5-installation-and-runtime-compatibility)
+- [6. Metrics and evaluation protocol](#6-metrics-and-evaluation-protocol)
+- [7. Result plots](#7-result-plots)
+- [8. Artifacts and reuse](#8-artifacts-and-reuse)
+- [9. Practical interpretation](#9-practical-interpretation)
+- [10. Reproduction checklist](#10-reproduction-checklist)
+- [Author](#author)
+- [License](#license)
+
+
 ## 1. Method overview
 
 QLoRA combines low-bit base-model loading with trainable low-rank adapters. In this repository, the intended efficiency mechanisms are:
@@ -133,6 +153,16 @@ For a controlled LoRA-versus-QLoRA comparison, keep dataset mode, seed, base che
 - [ ] Inspect both plot artifacts.
 - [ ] Confirm the model and tokenizer were saved under `outputs/imdb_qlora/model/`.
 
+
+## Explore the other experiments
+
+| Approach | Documentation |
+|---|---|
+| Head-only classification head | [NEW_HEAD](../NEW_HEAD/README.md) |
+| Final Transformer block + head | [LAST_LAYER](../LAST_LAYER/README.md) |
+| Low-Rank Adaptation | [PEFT_LORA](../PEFT_LORA/README.md) |
+| 4-bit quantized LoRA | [PEFT_QLORA](../PEFT_QLORA/README.md) |
+
 ## Author
 
 Shubham Singh
@@ -141,6 +171,8 @@ Shubham Singh
 ---
 
 ## License
+
+This project is licensed under the [MIT License](LICENSE). The full license text is reproduced below; the standalone [`LICENSE`](LICENSE) file is the canonical license file for this directory.
 
 MIT License
 
