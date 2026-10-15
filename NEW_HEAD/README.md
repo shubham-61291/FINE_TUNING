@@ -2,6 +2,25 @@
 
 **IMDb binary sentiment classification by training a new classification head while freezing the pretrained backbone.**
 
+<p align="center"><a href="#contents"><img src="https://img.shields.io/badge/Method-Head-only-6F42C1?style=for-the-badge&amp;logo=pytorch&amp;logoColor=white" alt="Method: Head-only" /></a> &nbsp; <a href="https://huggingface.co/"><img src="https://img.shields.io/badge/Model-DistilBERT-EE4C2C?style=for-the-badge&amp;logo=huggingface&amp;logoColor=white" alt="Model: DistilBERT" /></a> &nbsp; <a href="https://huggingface.co/datasets/stanfordnlp/imdb"><img src="https://img.shields.io/badge/Dataset-IMDb-4A4A4A?style=for-the-badge&amp;logo=imdb&amp;logoColor=white" alt="IMDb dataset" /></a> &nbsp; <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-Training-3776AB?style=for-the-badge&amp;logo=python&amp;logoColor=white" alt="Python training" /></a> &nbsp; <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-238636?style=for-the-badge&amp;logo=opensourceinitiative&amp;logoColor=white" alt="MIT License" /></a></p>
+
+<p align="center"><strong><a href="../README.md">Repository overview</a></strong> · <strong><a href="fine_tuning_new_head_addiiton.py">Training script</a></strong> · <strong><a href="LICENSE">MIT License</a></strong></p>
+
+## Contents
+
+- [1. Objective](#1-objective)
+- [2. Model, dataset, and labels](#2-model-dataset-and-labels)
+- [3. Training design](#3-training-design)
+- [4. Training configuration and runtime behavior](#4-training-configuration-and-runtime-behavior)
+- [5. Metrics](#5-metrics)
+- [6. Result plots](#6-result-plots)
+- [7. Inference example](#7-inference-example)
+- [8. Files and outputs](#8-files-and-outputs)
+- [9. Reproduction checklist](#9-reproduction-checklist)
+- [Author](#author)
+- [License](#license)
+
+
 ## 1. Objective
 
 This experiment isolates the classification-head adaptation strategy. It loads `distilbert-base-uncased` through Hugging Face Transformers, creates a two-label sequence-classification model, freezes the base Transformer parameters, and updates the newly initialized classification head. The aim is to demonstrate an inexpensive way to attach a task-specific decision layer to a fixed pretrained representation.
@@ -105,6 +124,16 @@ outputs/imdb_head_only/model/
 - [ ] Inspect both generated plots.
 - [ ] Confirm the saved model and tokenizer exist in `outputs/imdb_head_only/model/`.
 
+
+## Explore the other experiments
+
+| Approach | Documentation |
+|---|---|
+| Head-only classification head | [NEW_HEAD](../NEW_HEAD/README.md) |
+| Final Transformer block + head | [LAST_LAYER](../LAST_LAYER/README.md) |
+| Low-Rank Adaptation | [PEFT_LORA](../PEFT_LORA/README.md) |
+| 4-bit quantized LoRA | [PEFT_QLORA](../PEFT_QLORA/README.md) |
+
 ## Author
 
 Shubham Singh
@@ -113,6 +142,8 @@ Shubham Singh
 ---
 
 ## License
+
+This project is licensed under the [MIT License](LICENSE). The full license text is reproduced below; the standalone [`LICENSE`](LICENSE) file is the canonical license file for this directory.
 
 MIT License
 
